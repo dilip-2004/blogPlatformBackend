@@ -71,7 +71,6 @@ async def get_blogs(
     db = await get_database()
 
     filters = {}
-
     if published_only:
         filters["published"] = True
 
@@ -80,7 +79,6 @@ async def get_blogs(
         filters["tags"] = {"$in": tag_list}
 
     skip = (page - 1) * page_size
-
     total = await db.blogs.count_documents(filters)
 
     blogs_cursor = db.blogs.find(filters)\
@@ -89,8 +87,12 @@ async def get_blogs(
         .limit(page_size)
 
     blogs = await blogs_cursor.to_list(length=page_size)
-    blogs = [convert_objectid_to_str(blog) for blog in blogs]
-    print(blogs)
+
+    # Add username to each blog
+    for blog in blogs:
+        blog = convert_objectid_to_str(blog)
+        user = await db.users.find_one({"_id": ObjectId(blog["user_id"])}, {"username": 1})
+        blog["username"] = user["username"] if user else "Unknown"
 
     return PaginatedBlogsResponse(
         blogs=blogs,
@@ -108,13 +110,17 @@ async def get_my_blogs(
     page_size: int = Query(10, ge=1, le=100)
 ):
     db = await get_database()
-    cursor = db.blogs.find({"user_id": ObjectId(current_user.id)}).sort("created_at", -1).skip((page - 1) * page_size).limit(page_size)
+    cursor = db.blogs.find(
+        {"user_id": ObjectId(current_user.id)}
+    ).sort("created_at", -1).skip((page - 1) * page_size).limit(page_size)
+
     blogs = await cursor.to_list(length=page_size)
 
     return [
         BlogResponse(
             _id=str(blog["_id"]),
             user_id=str(blog["user_id"]),
+            username=current_user.username,  # Inject username here
             title=blog.get("title", ""),
             content=blog.get("content", ""),
             tags=blog.get("tags", []),
@@ -260,6 +266,7 @@ async def search_blogs(
                 blog=BlogResponse(
                     _id=str(blog["_id"]),
                     user_id=str(blog["user_id"]),
+                    username=username,
                     title=blog.get("title", ""),
                     content=blog.get("content", ""),
                     tags=blog.get("tags", []),
@@ -269,7 +276,6 @@ async def search_blogs(
                     updated_at=blog.get("updated_at"),
                     comment_count=blog.get("comment_count", 0),
                     likes_count=blog.get("likes_count", 0),
-                    username=username
                 ),
                 relevance_score=total_score
             )
