@@ -146,8 +146,14 @@ async def get_blog(blog_id: str):
     if not blog:
         raise HTTPException(status_code=404, detail="Blog not found")
 
+    # Convert ObjectIds to string
     blog["_id"] = str(blog["_id"])
     blog["user_id"] = str(blog["user_id"])
+
+    # Fetch author's username
+    author = await db.users.find_one({"_id": ObjectId(blog["user_id"])}, {"username": 1})
+    blog["username"] = author["username"] if author else "Unknown"
+
     return BlogResponse(**blog)
 
 
