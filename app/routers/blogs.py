@@ -38,6 +38,7 @@ async def create_blog(blog: BlogCreate, current_user: UserInDB = Depends(get_cur
     blog_dict = {
         "user_id": ObjectId(current_user.id),
         "title": blog.title,
+        "username":current_user.email,
         "content": blog.content,
         "tags": blog.tags,
         "main_image_url": blog.main_image_url,
@@ -89,6 +90,7 @@ async def get_blogs(
 
     blogs = await blogs_cursor.to_list(length=page_size)
     blogs = [convert_objectid_to_str(blog) for blog in blogs]
+    print(blogs)
 
     return PaginatedBlogsResponse(
         blogs=blogs,
