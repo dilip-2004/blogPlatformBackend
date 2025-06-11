@@ -54,36 +54,48 @@ async def create_blog(blog: BlogCreate, current_user: UserInDB = Depends(get_cur
 
     return BlogResponse(**blog_dict)
 
+def convert_objectid_to_str(document: dict):
+    for key, value in document.items():
+        if isinstance(value, ObjectId):
+            document[key] = str(value)
+    return document
 
 @router.get("/", response_model=PaginatedBlogsResponse)
 async def get_blogs(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),
     published_only: bool = Query(True),
-    tags: Optional[str] = Query(None),
-    current_user: Optional[UserInDB] = Depends(get_current_user_optional)
+    tags: Optional[str] = Query(None)
 ):
     db = await get_database()
-    user_interests = None
 
-    if current_user:
-        user_interests_doc = await db.user_interests.find_one({"user_id": ObjectId(current_user.id)})
-        user_interests = user_interests_doc.get('interests', []) if user_interests_doc else []
+    filters = {}
 
-    recommendations, total_count = await recommendation_service.get_all_blogs_sorted_by_interest(
-        user_interests=user_interests,
-        page=page,
-        page_size=page_size,
-        published_only=published_only,
-        tags=tags
-    )
+    if published_only:
+        filters["published"] = True
+
+    if tags:
+        tag_list = [tag.strip() for tag in tags.split(",")]
+        filters["tags"] = {"$in": tag_list}
+
+    skip = (page - 1) * page_size
+
+    total = await db.blogs.count_documents(filters)
+
+    blogs_cursor = db.blogs.find(filters)\
+        .sort("created_at", -1)\
+        .skip(skip)\
+        .limit(page_size)
+
+    blogs = await blogs_cursor.to_list(length=page_size)
+    blogs = [convert_objectid_to_str(blog) for blog in blogs]
 
     return PaginatedBlogsResponse(
-        blogs=[rec.blog for rec in recommendations],
-        total=total_count,
+        blogs=blogs,
+        total=total,
         page=page,
         limit=page_size,
-        total_pages=(total_count + page_size - 1) // page_size
+        total_pages=(total + page_size - 1) // page_size
     )
 
 
@@ -149,8 +161,23 @@ async def update_blog(
     if str(blog["user_id"]) != current_user.id:
         raise HTTPException(status_code=403, detail="You don't have permission to edit this blog")
 
+    tags = [tag.strip().lower() for tag in blog_update.tags or [] if tag.strip()]
+
+    if tags:
+        existing_tags = await db.tags.find({
+            "$or": [{"name": {"$regex": f"^{re.escape(tag)}$", "$options": "i"}} for tag in tags]
+        }).to_list(None)
+
+        existing_tag_names = {tag["name"].lower() for tag in existing_tags}
+        new_tags = [
+            {"name": tag, "created_at": datetime.now(timezone.utc)}
+            for tag in tags if tag.lower() not in existing_tag_names
+        ]
+        if new_tags:
+            await db.tags.insert_many(new_tags)
+
     update_data = {
-        "updated_at": datetime.now(),
+        "updated_at": datetime.now(timezone.utc),
         **{k: v for k, v in blog_update.dict(exclude_unset=True).items()}
     }
 
@@ -161,6 +188,7 @@ async def update_blog(
     updated_blog["user_id"] = str(updated_blog["user_id"])
 
     return BlogResponse(**updated_blog)
+
 
 
 @router.delete("/{blog_id}")

@@ -90,8 +90,8 @@ async def login(user_credentials: UserLogin, response: Response):
         value=refresh_token,
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 86400,
         httponly=True,
-        secure=False,  # ⚠️ Set to True in production
-        samesite="lax",
+        secure=True,  # ⚠️ Set to True in production
+        samesite="none",
         path="/api/v1/auth"
     )
 
@@ -139,8 +139,8 @@ async def refresh_token(request: Request, response: Response):
             value=new_refresh_token,
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 86400,
             httponly=True,
-            secure=False,  # ⚠️ Set to True in production
-            samesite="lax",
+            secure=True,  # ⚠️ Set to True in production
+            samesite="none",
             path="/api/v1/auth"
         )
 

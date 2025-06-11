@@ -10,7 +10,7 @@ PyObjectId = Annotated[str, Field(description="MongoDB ObjectId")]
 # User Models
 
 class UserCreate(BaseModel):
-    username: str = Field(..., min_length=3, max_length=20)
+    username: str = Field(..., min_length=3, max_length=100)
     email: EmailStr
     password: str = Field(..., min_length=6)
 

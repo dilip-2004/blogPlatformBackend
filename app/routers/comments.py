@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import List
-from datetime import datetime
+from datetime import datetime, timezone
 from bson import ObjectId
 
 from app.models.models import CommentCreate, CommentResponse, UserInDB
@@ -134,7 +134,7 @@ async def update_comment(
         {
             "$set": {
                 "text": comment_update.text,
-                "updated_at": datetime.now()
+                "updated_at": datetime.now(timezone.utc)
             }
         }
     )
