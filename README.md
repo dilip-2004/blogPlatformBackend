@@ -768,14 +768,6 @@ Closes #123"
 5. **Security**: No security vulnerabilities introduced
 
 ---
-
-## 📞 Support
-
-For backend-specific issues:
-- 📧 **Email**: backend-support@blogplatform.com
-- 💬 **Discord**: [#backend-support](https://discord.gg/blogplatform-backend)
-- 📝 **Issues**: [GitHub Issues](https://github.com/yourusername/BlogPlatform/issues)
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
