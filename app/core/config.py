@@ -45,5 +45,4 @@ class Settings:
     # CORS Configuration
     CORS_ORIGINS: List[str] = field(default_factory=lambda: config("CORS_ORIGINS", default="http://localhost:4200,http://127.0.0.1:4200,https://blogplatformapplicationilink.netlify.app", cast=lambda v: [s.strip() for s in v.split(',')]))
 
-
 settings = Settings()

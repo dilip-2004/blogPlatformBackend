@@ -16,6 +16,7 @@ from app.routers.tags import router as tags_router
 from app.routers.interests import router as interests_router
 from app.routers.images import router as images_router
 from app.routers.summaries import router as summaries_router
+from app.routers.dashboard import router as dashboard_router
 
 
 @asynccontextmanager
@@ -54,6 +55,7 @@ app.include_router(likes_router, prefix=api_prefix)
 app.include_router(tags_router, prefix=api_prefix)
 app.include_router(interests_router, prefix=api_prefix)
 app.include_router(summaries_router, prefix=api_prefix)
+app.include_router(dashboard_router, prefix=api_prefix)
 
 # Root and Health Endpoints
 @app.get("/", tags=["Root"])
@@ -63,7 +65,6 @@ async def root():
 @app.get("/health", tags=["Health"])
 async def health_check():
     return {"status": "healthy"}
-
 
 # Development server runner
 if __name__ == "__main__":
