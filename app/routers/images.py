@@ -133,7 +133,7 @@ async def get_image_url(
         url = s3_client.generate_presigned_url(
             ClientMethod="get_object",
             Params={"Bucket": BUCKET_NAME, "Key": file_key},
-            ExpiresIn=3600  # 1 hour
+            ExpiresIn=3600
         )
         return SingleImageResponse(success=True, imageUrl=url)
     except ClientError as e:

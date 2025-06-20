@@ -10,7 +10,6 @@ from app.models.models import (
 from app.core.auth import get_current_user, get_current_user_optional
 from app.db.database import get_database
 from app.services.recommendation_service import recommendation_service
-
 import re
 
 router = APIRouter(prefix="/blogs", tags=["blogs"])
@@ -120,7 +119,7 @@ async def get_my_blogs(
         BlogResponse(
             _id=str(blog["_id"]),
             user_id=str(blog["user_id"]),
-            username=current_user.username,  # Inject username here
+            username=current_user.username,
             title=blog.get("title", ""),
             content=blog.get("content", ""),
             tags=blog.get("tags", []),
@@ -242,7 +241,7 @@ async def search_blogs(
                 "$or": [
                     {"title": {"$regex": query, "$options": "i"}},
                     {"content": {"$regex": query, "$options": "i"}},
-                    {"tags": {"$regex": query, "$options": "i"}}
+                    {"tags": {"$regex": query, "$options": "i"}}    
                 ]
             }
         ]

@@ -1,11 +1,9 @@
 from datetime import datetime
 from bson import ObjectId
-from fastapi import APIRouter, HTTPException, status, Depends, Response, Request
-from fastapi.security import HTTPAuthorizationCredentials
+from fastapi import APIRouter, HTTPException, Depends, Response, Request
 from pydantic import BaseModel, EmailStr
 
-from app.models.models import (
-    ForgotPassword, PasswordChange, ResetPassword, UserCreate,
+from app.models.models import ( PasswordChange, UserCreate,
     UserLogin, UserResponse, UserInDB, UsernameUpdate
 )
 from app.core.auth import (
@@ -18,7 +16,7 @@ from app.core.config import settings
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
-# ==== RESPONSE SCHEMAS ====
+#RESPONSE SCHEMAS
 
 class UserInfo(BaseModel):
     id: str
@@ -39,7 +37,7 @@ class RefreshResponse(BaseModel):
     message: str
 
 
-# ==== ROUTES ====
+#ROUTES
 
 @router.post("/register", response_model=UserResponse)
 async def register(user: UserCreate):
@@ -92,7 +90,7 @@ async def login(user_credentials: UserLogin, response: Response):
         httponly=True,
         secure=True,
         samesite="none",
-        path="/"
+        path="/api/v1/auth"
     )
 
     return LoginResponse(
@@ -141,7 +139,7 @@ async def refresh_token(request: Request, response: Response):
             httponly=True,
             secure=True, 
             samesite="none",
-            path="/"
+            path="/api/v1/auth"
         )
 
         return RefreshResponse(
@@ -186,8 +184,6 @@ async def get_user_by_id(user_id: str):
         "username": user["username"],
         "email": user["email"],
         "created_at": user["created_at"],
-        "full_name": user.get("full_name"),
-        "profile_picture": user.get("profile_picture")
     }
 
     return UserResponse(**user_response)

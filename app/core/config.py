@@ -28,8 +28,5 @@ class Settings:
     GEMINI_TOP_K: int = config("GEMINI_TOP_K", default=40, cast=int)
     GEMINI_MAX_TOKENS: int = config("GEMINI_MAX_TOKENS", default=2048, cast=int)
 
-    # Environment
-    ENVIRONMENT: str = config("ENVIRONMENT", default="development")
-
 
 settings = Settings()
