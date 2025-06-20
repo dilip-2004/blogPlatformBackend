@@ -14,7 +14,7 @@ from app.routers.tags import router as tags_router
 from app.routers.interests import router as interests_router
 from app.routers.images import router as images_router
 from app.routers.summaries import router as summaries_router
-from app.routers.dashboard import router as dashboards_router
+from app.routers.dashboard import router as dashboard_router
 
 
 @asynccontextmanager
@@ -34,7 +34,7 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://blogplatformapplicationilink.netlify.app","http://localhost:4200"],
+    allow_origins=["http://localhost:4200","http://127.0.0.1:4200","https://blogplatformapplicationilink.netlify.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -50,7 +50,7 @@ app.include_router(likes_router, prefix=api_prefix)
 app.include_router(tags_router, prefix=api_prefix)
 app.include_router(interests_router, prefix=api_prefix)
 app.include_router(summaries_router, prefix=api_prefix)
-app.include_router(dashboards_router, prefix=api_prefix)
+app.include_router(dashboard_router, prefix=api_prefix)
 
 # Root and Health Endpoints
 @app.get("/", tags=["Root"])
@@ -61,6 +61,7 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
+# Development server runner
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
