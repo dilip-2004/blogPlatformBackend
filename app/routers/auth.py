@@ -46,9 +46,6 @@ async def register(user: UserCreate):
     if await db.users.find_one({"email": user.email}):
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    if await db.users.find_one({"username": user.username}):
-        raise HTTPException(status_code=400, detail="Username already taken")
-
     hashed_password = get_password_hash(user.password)
     user_dict = {
         "username": user.username,
@@ -90,7 +87,7 @@ async def login(user_credentials: UserLogin, response: Response):
         httponly=True,
         secure=True,
         samesite="none",
-        path="/api/v1/auth"
+        path="/"
     )
 
     return LoginResponse(
@@ -139,7 +136,7 @@ async def refresh_token(request: Request, response: Response):
             httponly=True,
             secure=True, 
             samesite="none",
-            path="/api/v1/auth"
+            path="/"
         )
 
         return RefreshResponse(
@@ -150,7 +147,7 @@ async def refresh_token(request: Request, response: Response):
         )
 
     except Exception:
-        response.delete_cookie(key="refresh_token", path="/api/v1/auth")
+        response.delete_cookie(key="refresh_token", path="/")
         raise credentials_exception
 
 
@@ -158,7 +155,13 @@ async def refresh_token(request: Request, response: Response):
 async def logout(request: Request, response: Response, current_user: UserInDB = Depends(get_current_user)):
     db = await get_database()
     await db.users.update_one({"_id": ObjectId(current_user.id)}, {"$set": {"refresh_token": None}})
-    response.delete_cookie(key="refresh_token", path="/api/v1/auth", httponly=True, samesite="lax")
+    response.delete_cookie(
+        key="refresh_token",
+        path="/",
+        samesite="none",
+        httponly=True,
+        secure=True
+    )
     return {"message": "Successfully logged out"}
 
 

@@ -57,7 +57,7 @@ app.include_router(dashboards_router, prefix=api_prefix)
 async def root():
     return {"message": "Hello from FastAPI!"}
 
-@app.get("/health", tags=["Health"])
+@app.get("/health", tags=["Health"])    
 async def health_check():
     return {"status": "healthy"}
 
